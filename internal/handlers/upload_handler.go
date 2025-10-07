@@ -62,13 +62,13 @@ func (h *UploadHandler) HandleUpload(c *fiber.Ctx) error {
 
 		// Create document record
 		doc := models.Document{
-			ID:               uuid.New(),
-			Filename:         filename,
-			OriginalFileName: cvFile.Filename,
-			FileType:         "cv",
-			FilePath:         filePath,
-			CreatedAt:        time.Now(),
-			UpdatedAt:        time.Now(),
+			ID:           uuid.New(),
+			Filename:     filename,
+			OriginalName: cvFile.Filename,
+			FileType:     "cv",
+			FilePath:     filePath,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
 		}
 
 		// Save document to repository
@@ -83,7 +83,7 @@ func (h *UploadHandler) HandleUpload(c *fiber.Ctx) error {
 		responses = append(responses, models.UploadResponse{
 			ID:           doc.ID.String(),
 			Filename:     doc.Filename,
-			OriginalName: doc.OriginalFileName,
+			OriginalName: doc.OriginalName,
 			FileType:     doc.FileType,
 		})
 	}
@@ -108,13 +108,13 @@ func (h *UploadHandler) HandleUpload(c *fiber.Ctx) error {
 
 		// Save document record
 		doc := models.Document{
-			ID:               uuid.New(),
-			Filename:         filename,
-			OriginalFileName: projectFile.Filename,
-			FileType:         "project_report",
-			FilePath:         filePath,
-			CreatedAt:        time.Now(),
-			UpdatedAt:        time.Now(),
+			ID:           uuid.New(),
+			Filename:     filename,
+			OriginalName: projectFile.Filename,
+			FileType:     "project_report",
+			FilePath:     filePath,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
 		}
 
 		if err := h.docRepo.Create(&doc); err != nil {
@@ -128,7 +128,7 @@ func (h *UploadHandler) HandleUpload(c *fiber.Ctx) error {
 		responses = append(responses, models.UploadResponse{
 			ID:           doc.ID.String(),
 			Filename:     doc.Filename,
-			OriginalName: doc.OriginalFileName,
+			OriginalName: doc.OriginalName,
 			FileType:     doc.FileType,
 		})
 	}

@@ -16,19 +16,19 @@ const (
 )
 
 type Evaluation struct {
-	ID                uuid.UUID        `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	JobTitle          string           `gorm:"type:text" json:"job_title"`
-	CVDocumentID      uuid.UUID        `gorm:"type:uuid;not null" json:"cv_document_id"`
-	ProjectDocumentID uuid.UUID        `gorm:"type:uuid;not null" json:"project_document_id"`
-	Status            EvaluationStatus `gorm:"not null;default:'queued'" json:"status"`
-	CVMatchRate       *float64         `gorm:"type:decimal(3,2)" json:"cv_match_rate,omitempty"`
-	CVFeedback        *string          `gorm:"type:text" json:"cv_feedback,omitempty"`
-	ProjectScore      *float64         `gorm:"type:decimal(3,2)" json:"project_score,omitempty"`
-	ProjectFeedback   *string          `gorm:"type:text" json:"project_feedback,omitempty"`
-	OverallSummary    *string          `gorm:"type:text" json:"overall_summary,omitempty"`
-	ErrorMessage      *string          `gorm:"type:text" json:"error_message,omitempty"`
-	CreatedAt         time.Time        `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt         time.Time        `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	ID                uuid.UUID        `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id" column:"id"`
+	JobTitle          string           `gorm:"type:text" json:"job_title" column:"job_title"`
+	CVDocumentID      uuid.UUID        `gorm:"type:uuid;not null" json:"cv_document_id" column:"cv_document_id"`
+	ProjectDocumentID uuid.UUID        `gorm:"type:uuid;not null" json:"project_document_id" column:"project_document_id"`
+	Status            EvaluationStatus `gorm:"not null;default:'queued'" json:"status" column:"status"`
+	CVMatchRate       float64          `gorm:"column:cv_match_rate" json:"cv_match_rate"`
+	CVFeedback        string           `gorm:"type:text" json:"cv_feedback,omitempty" column:"cv_feedback"`
+	ProjectScore      float64          `gorm:"column:project_score" json:"project_score,omitempty"`
+	ProjectFeedback   string           `gorm:"type:text" json:"project_feedback,omitempty" column:"project_feedback"`
+	OverallSummary    string           `gorm:"type:text" json:"overall_summary,omitempty" column:"overall_summary"`
+	ErrorMessage      string           `gorm:"type:text" json:"error_message,omitempty" column:"error_message"`
+	CreatedAt         time.Time        `gorm:"default:CURRENT_TIMESTAMP" json:"created_at" column:"created_at"`
+	UpdatedAt         time.Time        `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at" column:"updated_at"`
 
 	// Relations
 	CVDocument      Document `gorm:"foreignKey:CVDocumentID" json:"-"`

@@ -1,0 +1,11 @@
+# Copy this file to docker-compose.override.yaml and customize for your environment
+version: '3.8'
+
+services:
+  api:
+    environment:
+      # Set your actual Gemini API key here
+      GEMINI_API_KEY: "your_actual_gemini_api_key_here"
+    volumes:
+      # Mount your local uploads directory for persistence
+      - ./uploads:/app/uploads:rw

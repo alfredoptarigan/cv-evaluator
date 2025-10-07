@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/qdrant/go-client/qdrant"
@@ -30,10 +32,29 @@ type qdrantService struct {
 	vectorSize     uint64
 }
 
-func NewQdrantService(url, apiKey, collectionName string) (QdrantService, error) {
+func NewQdrantService(urlStr, apiKey, collectionName string) (QdrantService, error) {
+	// Parse URL to extract host, port, and TLS usage
+	parsed, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid Qdrant URL: %w", err)
+	}
+
+	host := parsed.Hostname()
+	useTLS := parsed.Scheme == "https"
+
+	// For gRPC client, use port 6334 by default (gRPC port)
+	port := 6334
+	if p := parsed.Port(); p != "" {
+		if v, err := strconv.Atoi(p); err == nil {
+			port = v
+		}
+	}
+
 	client, err := qdrant.NewClient(&qdrant.Config{
-		Host:   url,
+		Host:   host,
+		Port:   port,
 		APIKey: apiKey,
+		UseTLS: useTLS,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create qdrant client: %w", err)

@@ -7,8 +7,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-
-	"alfredoptarigan/cv-evaluator/internal/models"
 )
 
 func InitDatabase(cfg *Config) (*gorm.DB, error) {
@@ -27,16 +25,6 @@ func InitDatabase(cfg *Config) (*gorm.DB, error) {
 	}
 
 	log.Println("✅ Database connected successfully")
-
-	// Auto migrate
-	if err := db.AutoMigrate(
-		&models.Document{},
-		&models.Evaluation{},
-	); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: %w", err)
-	}
-
-	log.Println("✅ Database migration completed")
 
 	return db, nil
 }

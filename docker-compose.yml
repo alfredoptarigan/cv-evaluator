@@ -1,0 +1,124 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-cv-evaluator-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_cv_evaluator
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-cv-network
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ai-cv-evaluator-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333" # REST API
+      - "6334:6334" # gRPC API
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      # Optional: Set API key for security
+      # QDRANT__SERVICE__API_KEY: your_secret_key_here
+      QDRANT__LOG_LEVEL: INFO
+    networks:
+      - ai-cv-network
+
+  # Main Application (Optional - uncomment when ready)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-cv-evaluator-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Server
+      PORT: 3000
+      ENV: production
+
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: ai_cv_evaluator
+
+      # Qdrant
+      QDRANT_URL: http://qdrant:6334
+      QDRANT_API_KEY: ""
+      QDRANT_COLLECTION: cv_evaluator_docs
+
+      # Gemini (set your API key here or use .env file)
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+      # Storage
+      UPLOAD_PATH: /app/uploads
+      MAX_FILE_SIZE: 10485760
+
+      # Worker
+      WORKER_CONCURRENCY: 3
+      RETRY_MAX_ATTEMPTS: 3
+      RETRY_INITIAL_DELAY: 2s
+    volumes:
+      - ./uploads:/app/uploads
+      - ./reference_docs:/app/reference_docs
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ai-cv-network
+    # Optional: for development with hot reload
+    # command: go run cmd/api/main.go
+
+  # Database Migration Runner (runs once and exits)
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-cv-evaluator-migrate
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: postgres://postgres:postgres@postgres:5432/ai_cv_evaluator?sslmode=disable
+      GOOSE_MIGRATION_DIR: internal/databases/migrations
+    networks:
+      - ai-cv-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./internal/databases/migrations:/app/internal/databases/migrations
+    command: >
+      sh -c "
+        go install github.com/pressly/goose/v3/cmd/goose@latest &&
+        goose -dir internal/databases/migrations -string '$$GOOSE_DBSTRING' up
+      "
+    restart: "no"
+
+# Volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+  qdrant_data:
+    driver: local
+
+# Network for service communication
+networks:
+  ai-cv-network:
+    driver: bridge

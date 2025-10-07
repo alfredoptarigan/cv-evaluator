@@ -12,7 +12,7 @@ import (
 
 type EvaluationRepository interface {
 	Create(eval *models.Evaluation) error
-	FindByID(id uuid.UUID) (*models.Evaluation, error)
+	FindByID(id uuid.UUID) (models.Evaluation, error)
 	UpdateStatus(id uuid.UUID, status models.EvaluationStatus) error
 	UpdateResult(id uuid.UUID, result *EvaluationUpdateData) error
 	UpdateError(id uuid.UUID, errorMsg string) error
@@ -42,15 +42,15 @@ func (r *evaluationRepository) Create(eval *models.Evaluation) error {
 	return nil
 }
 
-func (r *evaluationRepository) FindByID(id uuid.UUID) (*models.Evaluation, error) {
+func (r *evaluationRepository) FindByID(id uuid.UUID) (models.Evaluation, error) {
 	var eval models.Evaluation
 	if err := r.db.Where("id = ?", id).First(&eval).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("evaluation not found")
+			return models.Evaluation{}, fmt.Errorf("evaluation not found")
 		}
-		return nil, fmt.Errorf("failed to find evaluation: %w", err)
+		return models.Evaluation{}, fmt.Errorf("failed to find evaluation: %w", err)
 	}
-	return &eval, nil
+	return eval, nil
 }
 
 func (r *evaluationRepository) UpdateStatus(id uuid.UUID, status models.EvaluationStatus) error {
