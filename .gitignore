@@ -76,3 +76,6 @@ coverage/
 .tern-port
 
 uploads/
+
+# Docker override files (contains sensitive configuration)
+docker-compose.override.yml
